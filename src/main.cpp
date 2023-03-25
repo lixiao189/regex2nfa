@@ -9,16 +9,28 @@ using std::cin;
 using std::cout;
 using std::endl;
 
+using std::make_unique;
+using std::shared_ptr;
 using std::stack;
 using std::string;
+
+/**
+ * @brief NFA 状态结构体
+ *
+ */
+struct NFAState {
+  char symbol;
+  shared_ptr<NFAState> out1;
+  shared_ptr<NFAState> out2;
+};
 
 /**
  * @brief NFA 类
  *
  */
-class NFA {
+class NFAAlgorithm {
 private:
-  string chars;
+  string symbols;
   string regex;
 
   enum class OP {
@@ -29,15 +41,16 @@ private:
   };
 
 public:
-  void output_NFA() const {
-    cout << "chars: " << chars << endl;
+  void output_detail() const {
+    cout << "symbols: " << symbols << endl;
     cout << "regex: " << regex << endl;
   }
 
-  explicit NFA(string chars, string &regex)
-      : chars(std::move(chars)), regex(regex) {
+  explicit NFAAlgorithm(string symbols, string &regex)
+      : symbols(std::move(symbols)), regex(regex) {
     add_connect_op();
     re2post();
+    build_nfa();
   };
 
   static OP get_op(char cur_char) {
@@ -56,8 +69,8 @@ public:
     }
   }
 
-  bool is_in_chars(char cur_char) {
-    return chars.find(cur_char) != std::string::npos;
+  bool is_in_symbols(char cur_char) {
+    return symbols.find(cur_char) != std::string::npos;
   }
 
   /**
@@ -67,8 +80,8 @@ public:
   void add_connect_op() {
     string new_regex;
     for (int i = 0; i < regex.size() - 1; i++) {
-      auto flag1 = is_in_chars(regex[i]);
-      auto flag2 = is_in_chars(regex[i + 1]);
+      auto flag1 = is_in_symbols(regex[i]);
+      auto flag2 = is_in_symbols(regex[i + 1]);
       if ((flag1 && regex[i + 1] == '(') || (flag1 && flag2) ||
           (regex[i] == ')' && flag2) || (regex[i] == '*' && flag2)) {
         new_regex += regex[i];
@@ -92,9 +105,9 @@ public:
     stack<char> op_stack;
 
     for (auto &cur_char : regex) {
-      if (is_in_chars(cur_char)) {
+      if (is_in_symbols(cur_char)) {
         post_regex += cur_char;
-      } else if (cur_char == '('){
+      } else if (cur_char == '(') {
         op_stack.push(cur_char);
       } else if (cur_char == ')') {
         while (op_stack.top() != '(') {
@@ -114,17 +127,23 @@ public:
     while (!op_stack.empty()) {
       post_regex += op_stack.top();
       op_stack.pop();
-    } 
+    }
 
     regex = post_regex;
   }
+
+  /**
+   * @brief 构建 NFA
+   *
+   */
+  void build_nfa() {}
 };
 
 int main() {
-  string chars;
+  string symbols;
   string regex;
-  cin >> chars >> regex;
+  cin >> symbols >> regex;
 
-  auto nfa = std::make_unique<NFA>(chars, regex);
-  nfa->output_NFA();
+  auto solver = make_unique<NFAAlgorithm>(symbols, regex);
+  solver->output_detail();
 }

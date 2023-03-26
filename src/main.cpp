@@ -53,8 +53,7 @@ private:
     shared_ptr<Node> start;
     shared_ptr<Node> end;
 
-    NFA(shared_ptr<Node> start, shared_ptr<Node> end)
-        : start(std::move(start)), end(std::move(end)) {}
+    NFA(shared_ptr<Node> start, shared_ptr<Node> end) : start(std::move(start)), end(std::move(end)) {}
   };
   shared_ptr<NFA> nfa;
 
@@ -64,8 +63,7 @@ public:
     cout << "regex: " << regex << endl;
   }
 
-  explicit NFAAlgorithm(string symbols, string &regex)
-      : symbols(std::move(symbols)), regex(regex) {
+  explicit NFAAlgorithm(string symbols, string &regex) : symbols(std::move(symbols)), regex(regex) {
     add_connect_op();
     re2post();
     build_nfa();
@@ -87,9 +85,7 @@ public:
     }
   }
 
-  bool is_in_symbols(char cur_char) {
-    return symbols.find(cur_char) != std::string::npos;
-  }
+  bool is_in_symbols(char cur_char) { return symbols.find(cur_char) != std::string::npos; }
 
   /** NFA构建用的函数 */
 
@@ -102,8 +98,7 @@ public:
     for (int i = 0; i < regex.size() - 1; i++) {
       auto flag1 = is_in_symbols(regex[i]);
       auto flag2 = is_in_symbols(regex[i + 1]);
-      if ((flag1 && regex[i + 1] == '(') || (flag1 && flag2) ||
-          (regex[i] == ')' && flag2) || (regex[i] == '*' && flag2)) {
+      if ((flag1 && regex[i + 1] == '(') || (flag1 && flag2) || (regex[i] == ')' && flag2) || (regex[i] == '*' && flag2)) {
         new_regex += regex[i];
         new_regex += '.';
       } else {
@@ -136,8 +131,7 @@ public:
         }
         op_stack.pop();
       } else {
-        while (!op_stack.empty() &&
-               get_op(op_stack.top()) >= get_op(cur_char)) {
+        while (!op_stack.empty() && get_op(op_stack.top()) >= get_op(cur_char)) {
           post_regex += op_stack.top();
           op_stack.pop();
         }
@@ -166,8 +160,7 @@ public:
         auto nfa1 = nfa_stack.top();
         nfa_stack.pop();
 
-        auto edge =
-            std::make_shared<Edge>(Edge{nfa1->end, nfa2->start, EPSILON});
+        auto edge = std::make_shared<Edge>(Edge{nfa1->end, nfa2->start, EPSILON});
 
         nfa1->end->out_edges.push_back(edge);
         nfa2->start->in_edges.push_back(edge);
@@ -185,10 +178,8 @@ public:
         start_node->id = gID++;
         end_node->id = gID++;
 
-        auto edge1 =
-            std::make_shared<Edge>(Edge{start_node, nfa1->start, EPSILON});
-        auto edge2 =
-            std::make_shared<Edge>(Edge{start_node, nfa2->start, EPSILON});
+        auto edge1 = std::make_shared<Edge>(Edge{start_node, nfa1->start, EPSILON});
+        auto edge2 = std::make_shared<Edge>(Edge{start_node, nfa2->start, EPSILON});
         auto edge3 = std::make_shared<Edge>(Edge{nfa1->end, end_node, EPSILON});
         auto edge4 = std::make_shared<Edge>(Edge{nfa2->end, end_node, EPSILON});
 
@@ -208,13 +199,10 @@ public:
         start_node->id = gID++;
         end_node->id = gID++;
 
-        auto edge1 =
-            std::make_shared<Edge>(Edge{start_node, nfa->start, EPSILON});
-        auto edge2 =
-            std::make_shared<Edge>(Edge{start_node, end_node, EPSILON});
+        auto edge1 = std::make_shared<Edge>(Edge{start_node, nfa->start, EPSILON});
+        auto edge2 = std::make_shared<Edge>(Edge{start_node, end_node, EPSILON});
         auto edge3 = std::make_shared<Edge>(Edge{nfa->end, end_node, EPSILON});
-        auto edge4 =
-            std::make_shared<Edge>(Edge{nfa->end, nfa->start, EPSILON});
+        auto edge4 = std::make_shared<Edge>(Edge{nfa->end, nfa->start, EPSILON});
 
         start_node->out_edges.push_back(edge1);
         start_node->out_edges.push_back(edge2);
@@ -229,8 +217,7 @@ public:
         start_node->id = gID++;
         end_node->id = gID++;
 
-        auto edge =
-            std::make_shared<Edge>(Edge{start_node, end_node, cur_char});
+        auto edge = std::make_shared<Edge>(Edge{start_node, end_node, cur_char});
 
         start_node->out_edges.push_back(edge);
         end_node->in_edges.push_back(edge);
@@ -272,8 +259,7 @@ public:
       for (auto &edge : cur_node->out_edges) {
         // cout << "(" << edge->from->id << "," << edge->symbol << ","
         //      << edge->to->id << ")" << endl;
-        printf("%c -> %c [label = \"%c\"]\n", edge->from->id, edge->to->id,
-               edge->symbol);
+        printf("%c -> %c [label = \"%c\"]\n", edge->from->id, edge->to->id, edge->symbol);
         if (!visited[edge->to->id]) {
           node_queue.push(edge->to);
         }

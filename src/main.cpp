@@ -38,7 +38,6 @@ private:
   char gID = gDefaultID;
   struct Node {
     char id; // Node 编号
-    vector<shared_ptr<Edge>> in_edges;
     vector<shared_ptr<Edge>> out_edges;
   };
 
@@ -163,7 +162,6 @@ public:
         auto edge = std::make_shared<Edge>(Edge{nfa1->end, nfa2->start, EPSILON});
 
         nfa1->end->out_edges.push_back(edge);
-        nfa2->start->in_edges.push_back(edge);
 
         auto nfa = std::make_shared<NFA>(nfa1->start, nfa2->end);
         nfa_stack.push(nfa);
@@ -220,7 +218,6 @@ public:
         auto edge = std::make_shared<Edge>(Edge{start_node, end_node, cur_char});
 
         start_node->out_edges.push_back(edge);
-        end_node->in_edges.push_back(edge);
 
         auto nfa = std::make_shared<NFA>(start_node, end_node);
         nfa_stack.push(nfa);
@@ -248,8 +245,10 @@ public:
 
     // 输出转移函数
     queue<shared_ptr<Node>> node_queue;
-    node_queue.push(nfa->start);
     vector<bool> visited(gID, false);
+    
+    node_queue.push(nfa->start);
+    visited[nfa->start->id] = true;
 
     while (!node_queue.empty()) {
       auto cur_node = node_queue.front();
@@ -257,10 +256,10 @@ public:
       node_queue.pop();
 
       for (auto &edge : cur_node->out_edges) {
-        // cout << "(" << edge->from->id << "," << edge->symbol << ","
-        //      << edge->to->id << ")" << endl;
-        printf("%c -> %c [label = \"%c\"]\n", edge->from->id, edge->to->id, edge->symbol);
+        cout << "(" << edge->from->id << "," << edge->symbol << ","
+             << edge->to->id << ")" << endl;
         if (!visited[edge->to->id]) {
+          visited[edge->to->id] = true;
           node_queue.push(edge->to);
         }
       }
@@ -274,5 +273,6 @@ int main() {
   cin >> symbols >> regex;
 
   auto solver = std::make_unique<NFAAlgorithm>(symbols, regex);
+  solver->output_detail();
   solver->output_nfa();
 }

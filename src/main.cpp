@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <queue>
@@ -7,9 +8,9 @@
 #include <utility>
 #include <vector>
 
-using std::cin;
-using std::cout;
 using std::endl;
+using std::ifstream;
+using std::ofstream;
 
 using std::queue;
 using std::shared_ptr;
@@ -57,11 +58,6 @@ private:
   shared_ptr<NFA> nfa;
 
 public:
-  void output_detail() const {
-    cout << "symbols: " << symbols << endl;
-    cout << "regex: " << regex << endl;
-  }
-
   explicit NFAAlgorithm(string symbols, string &regex) : symbols(std::move(symbols)), regex(regex) {
     add_connect_op();
     re2post();
@@ -228,25 +224,27 @@ public:
   }
 
   void output_nfa() {
+    auto output_file = ofstream("output.txt"); // 打开文件
+
     // 输出状态集
     for (auto state = gDefaultID; state < gID; state++) {
-      cout << state;
+      output_file << state;
     }
-    cout << endl;
+    output_file << endl;
 
     // 输出符号集
-    cout << symbols << endl;
+    output_file << symbols << endl;
 
     // 输出初态集
-    cout << nfa->start->id << endl;
+    output_file << nfa->start->id << endl;
 
     // 输出终态集
-    cout << nfa->end->id << endl;
+    output_file << nfa->end->id << endl;
 
     // 输出转移函数
     queue<shared_ptr<Node>> node_queue;
     vector<bool> visited(gID, false);
-    
+
     node_queue.push(nfa->start);
     visited[nfa->start->id] = true;
 
@@ -256,8 +254,7 @@ public:
       node_queue.pop();
 
       for (auto &edge : cur_node->out_edges) {
-        cout << "(" << edge->from->id << "," << edge->symbol << ","
-             << edge->to->id << ")" << endl;
+        output_file << "(" << edge->from->id << "," << edge->symbol << "," << edge->to->id << ")" << endl;
         if (!visited[edge->to->id]) {
           visited[edge->to->id] = true;
           node_queue.push(edge->to);
@@ -268,11 +265,12 @@ public:
 };
 
 int main() {
+  auto input_file = ifstream("input.txt");
+
   string symbols;
   string regex;
-  cin >> symbols >> regex;
+  input_file >> symbols >> regex;
 
   auto solver = std::make_unique<NFAAlgorithm>(symbols, regex);
-  solver->output_detail();
   solver->output_nfa();
 }
